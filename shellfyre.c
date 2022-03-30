@@ -10,6 +10,8 @@ const char *sysname = "shellfyre";
 
 void fileSearch(char *searchedWord, bool isRecursive, bool isOpen);
 void execute(char *commName, char **args);
+void rockPaperScissors();
+char *whichFighter(char fighterInitial);
 
 enum return_codes
 {
@@ -398,6 +400,12 @@ int process_command(struct command_t *command)
 		}
 	}
 
+	if (strcmp(command->name, "rockpaperscissors") == 0 || strcmp(command->name, "rps") == 0)
+	{
+		rockPaperScissors();
+		return SUCCESS;
+	}
+
 	pid_t pid = fork();
 
 	if (pid == 0) // child
@@ -496,7 +504,7 @@ void fileSearch(char *searchedWord, bool isRecursive, bool isOpen)
 				   fileName, NULL);
 		else
 			execlp("find", "find", ".", "-maxdepth", "1", "-name", fileName, "-exec", "cat", " '{}' ", "\\;", NULL);
-		}
+	}
 	else
 	{
 		if (!isOpen)
@@ -504,4 +512,74 @@ void fileSearch(char *searchedWord, bool isRecursive, bool isOpen)
 		else
 			execlp("find", "find", ".", "-name", fileName, "-exec", "cat", " '{}' ", "\\;", NULL);
 	}
+}
+
+void rockPaperScissors()
+{
+	int mode;
+	printf("Welcome to Rock Paper Scissors\n");
+	printf("Please Select A Mode\n");
+	printf("1 For 1 round Game\n");
+	printf("2 For Best of 3 Game\n");
+	printf("3 For Best of 5 Game\n");
+	scanf("%d", &mode);
+	int count =
+		mode == 1
+			? 1
+		: mode == 2
+			? 3
+		: mode == 3
+			? 5
+			: 0;
+	char player;
+	char bot;
+	int playerScore = 0, botScore = 0;
+	int round = 1;
+	while (1)
+	{
+		printf("\nRound %d\n", round++);
+		printf("Choose Your Fighter (r for rock, p for paper, s for scissors)\n");
+		scanf(" %c", &player); // initall pre-blank
+		int random = rand() % 3;
+		bot =
+			random == 0
+				? 'r'
+			: random == 1
+				? 'p'
+				: 's';
+
+		bool playerWin = (player == 'r' && bot == 's') || (player == 'p' && bot == 'r') || (player == 's' && bot == 'p');
+		bool botWin = (player == 's' && bot == 'r') || (player == 'r' && bot == 'p') || (player == 'p' && bot == 's');
+		bool isTie = player == bot;
+
+		playerScore += playerWin ? 1 : 0;
+		botScore += botWin ? 1 : 0;
+		if (playerWin)
+			printf("You win the round %s beats %s\n", whichFighter(player), whichFighter(bot));
+		if (botWin)
+			printf("You lose the round %s beaten by %s\n", whichFighter(player), whichFighter(bot));
+		if (isTie)
+			printf("It is tie %s cannot beat %s\n", whichFighter(player), whichFighter(bot));
+
+		printf("Scores are --> You: %d Computer: %d\n", playerScore, botScore);
+
+		if (playerScore > count / 2 || botScore > count / 2)
+			break;
+	}
+	printf("\nMatch Finished with scores --> You: %d Computer: %d\n", playerScore, botScore);
+	if (playerScore > botScore)
+		printf("\nCongrats!!\n\n");
+	else
+		printf("\nBig L for you\n\n");
+}
+
+char *whichFighter(char fighterInitial)
+{
+	if (fighterInitial == 'r')
+		return "Rock";
+	if (fighterInitial == 'p')
+		return "Paper";
+	if (fighterInitial == 's')
+		return "Scissors";
+	return "";
 }
