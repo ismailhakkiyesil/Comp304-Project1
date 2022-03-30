@@ -8,6 +8,9 @@
 #include <errno.h>
 const char *sysname = "shellfyre";
 
+void fileSearch(char *searchedWord, bool isRecursive, bool isOpen);
+void execute(char *commName, char **args);
+
 enum return_codes
 {
 	SUCCESS = 0,
@@ -361,6 +364,40 @@ int process_command(struct command_t *command)
 
 	// TODO: Implement your custom commands here
 
+	if (strcmp(command->name, "filesearch") == 0 || strcmp(command->name, "fs") == 0)
+	{
+		// printf("filesearch working\n");
+		if (command->arg_count == 1)
+		{
+			fileSearch(command->args[0], false, false);
+			return SUCCESS;
+		}
+		else if (command->arg_count == 2)
+		{
+
+			if (strcmp(command->args[1], "-r") == 0)
+				fileSearch(command->args[0], true, false);
+			else if (strcmp(command->args[1], "-o") == 0)
+				fileSearch(command->args[0], false, true);
+			else
+			{
+				printf("Syntax must be like this --> fs filename [-r],[-o]\n");
+				return UNKNOWN;
+			}
+
+			return SUCCESS;
+		}
+		else if (command->arg_count == 3)
+		{
+			fileSearch(command->args[0], true, true);
+		}
+		else
+		{
+			printf("Syntax must be like this --> fs filename [-r],[-o]\n");
+			return UNKNOWN;
+		}
+	}
+
 	pid_t pid = fork();
 
 	if (pid == 0) // child
@@ -379,16 +416,92 @@ int process_command(struct command_t *command)
 		command->args[command->arg_count - 1] = NULL;
 
 		/// TODO: do your own exec with path resolving using execv()
+		execute(command->name, command->args);
 
 		exit(0);
 	}
 	else
 	{
 		/// TODO: Wait for child to finish if command is not running in background
-
+		bool isBG = command->background;
+		if (!isBG)
+			wait(0);
 		return SUCCESS;
 	}
 
 	printf("-%s: %s: command not found\n", sysname, command->name);
 	return UNKNOWN;
+}
+
+void execute(char *commName, char **args)
+{
+	bool isChDir = strcmp("cd", commName) == 0;
+	bool isGCC = strcmp("cd", commName) == 0;
+	bool isExceptions = isGCC || isChDir;
+
+	if (isExceptions)
+	{
+		if (isChDir)
+			chdir(args[0]);
+		else
+			execv("/usr/bin/gcc", args);
+		return;
+	}
+
+	char *PATHenv = getenv("PATH");
+	int size = (sizeof(PATHenv) / sizeof(PATHenv[0]));
+	size++;
+
+	char *pathArr[size];
+
+	char *p = strtok(PATHenv, ":");
+
+	for (int i = 0; i < size; i++)
+	{
+		pathArr[i] = p;
+		p = strtok(NULL, ":");
+	}
+
+	for (int i = 0; i < sizeof(pathArr) / sizeof(pathArr[0]); i++)
+	{
+		char buffer[50] = "";
+		strcat(buffer, pathArr[i]);
+		strcat(buffer, "/");
+		strcat(buffer, commName);
+
+		if (access(buffer, X_OK) == 0)
+			execv(buffer, args);
+	}
+}
+
+void fileSearch(char *searchedWord, bool isRecursive, bool isOpen)
+{
+	// non-recursive
+	//  find ./workspace/python -maxdepth 1 -name hanoi.py
+	// recursive
+	//  find ./workspace/python -name input.csv
+	// open
+
+	char fileName[100];
+	strcat(fileName, searchedWord);
+	strcat(fileName, ".*");
+	// printf("%s\n", fileName);
+
+	// -o is work in progress
+	if (!isRecursive)
+	{
+		if (!isOpen)
+			execlp("find", "find", ".", "-maxdepth", "1",
+				   "-name",
+				   fileName, NULL);
+		else
+			execlp("find", "find", ".", "-maxdepth", "1", "-name", fileName, "-exec", "cat", " '{}' ", "\\;", NULL);
+		}
+	else
+	{
+		if (!isOpen)
+			execlp("find", "find", ".", "-name", fileName, NULL);
+		else
+			execlp("find", "find", ".", "-name", fileName, "-exec", "cat", " '{}' ", "\\;", NULL);
+	}
 }
