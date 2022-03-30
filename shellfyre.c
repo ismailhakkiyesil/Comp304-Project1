@@ -12,6 +12,7 @@ void fileSearch(char *searchedWord, bool isRecursive, bool isOpen);
 void execute(char *commName, char **args);
 void rockPaperScissors();
 char *whichFighter(char fighterInitial);
+void DadJoke();
 
 enum return_codes
 {
@@ -405,6 +406,13 @@ int process_command(struct command_t *command)
 		rockPaperScissors();
 		return SUCCESS;
 	}
+	if (strcmp(command->name, "joker") == 0 || strcmp(command->name, "j") == 0)
+	{
+
+		// */15 * * * *
+		DadJoke();
+		return SUCCESS;
+	}
 
 	pid_t pid = fork();
 
@@ -582,4 +590,12 @@ char *whichFighter(char fighterInitial)
 	if (fighterInitial == 's')
 		return "Scissors";
 	return "";
+}
+
+void DadJoke()
+{
+	// curl - H "Accept: text/plain" https://icanhazdadjoke.com/
+	char *URL = "https://icanhazdadjoke.com";
+
+	execlp("curl", "curl", "-H", "\"Accept: text/plain\"", URL, NULL);
 }
