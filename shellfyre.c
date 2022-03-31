@@ -12,6 +12,7 @@ void fileSearch(char *searchedWord, bool isRecursive, bool isOpen);
 void execute(char *commName, char **args);
 void rockPaperScissors();
 char *whichFighter(char fighterInitial);
+void coffeeSelection();
 void DadJoke();
 
 enum return_codes
@@ -406,6 +407,13 @@ int process_command(struct command_t *command)
 		rockPaperScissors();
 		return SUCCESS;
 	}
+
+	if (strcmp(command->name, "coffeeselection") == 0 || strcmp(command->name, "coffee") == 0)
+	{
+		coffeeSelection();
+		return SUCCESS;
+	}
+
 	if (strcmp(command->name, "joker") == 0 || strcmp(command->name, "j") == 0)
 	{
 
@@ -590,6 +598,69 @@ char *whichFighter(char fighterInitial)
 	if (fighterInitial == 's')
 		return "Scissors";
 	return "";
+}
+
+void coffeeSelection()
+{
+	int temperature;
+	printf("Welcome to KU Bucks\n");
+	printf("Please select your coffee temperature\n");
+	printf("1 For Hot\n");
+	printf("2 For Iced\n");
+	scanf("%d", &temperature);
+
+	int coffee_selection;
+	int milk_selection; 
+
+	if(temperature == 1){
+	
+		printf("Our Hot coffee options are either cappucino or filtered coffee \n");
+		printf("<1 for americano, 2 for filtered coffee> \n");
+		scanf("%d", &coffee_selection);
+
+		printf("<You saw the milk behind the counter, if you want milk type 1 else type 0>\n");
+		scanf("%d", &milk_selection);
+		if(milk_selection==1){
+			if(coffee_selection ==1){
+				printf("Oh, I forgot to mention milk. Here, your Hot americano with milk \n");
+			}
+			else{
+				printf("Oh, I forgot to mention milk. Here, your Hot filtered coffee with milk \n");
+			}
+		}
+		else{
+			if(coffee_selection ==1){
+				printf("Oh, I forgot to mention milk. Here, your Hot americano \n");
+			}
+			else{
+				printf("Oh, I forgot to mention milk. Here, your Hot filtered coffee \n");
+			}
+		}
+	}
+	else {
+		printf("Our Iced coffee options are either americano or filtered coffee \n");
+		printf("<1 for americano, 2 for filtered coffee> \n");
+		scanf("%d", &coffee_selection);
+
+		printf("<You saw the milk behind the counter, if you want milk type 1 else type 0> \n");
+		scanf("%d", &milk_selection);
+		if(milk_selection==1){
+			if(coffee_selection ==1){
+				printf("Oh, I forgot to mention milk. Here, your Iced americano with milk \n");
+			}
+			else{
+				printf("Oh, I forgot to mention milk. Here, your Iced filtered coffee with milk \n");
+			}
+		}
+		else{
+			if(coffee_selection ==1){
+				printf("Oh, I forgot to mention milk. Here, your Iced americano \n");
+			}
+			else{
+				printf("Oh, I forgot to mention milk. Here, your Iced filtered coffee \n");
+			}
+		}
+	}
 }
 
 void DadJoke()
