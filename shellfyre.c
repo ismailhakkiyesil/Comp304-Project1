@@ -437,7 +437,7 @@ if (strcmp(command->name, "take")==0 || strcmp(command->name, "t") == 0)
 		return SUCCESS;
 	}
 
-	if (strcmp(command->name, "pstraverse")==0 || strcmp(command->name, "pstra") == 0)
+	if (strcmp(command->name, "pstraverse")==0 || strcmp(command->name, "pst")==0)
 	{
 		pstraverse(atoi(command->args[0]), command->args[1]);
 		return SUCCESS;
@@ -712,20 +712,29 @@ void DadJoke()
 	execlp("curl", "curl", "-H", "\"Accept: text/plain\"", URL, NULL);
 }
 void pstraverse(int root, char *flag) {
+	//printf("Im inside pst\n");
+	
     char pid_number[15];
 	sprintf(pid_number, "%d", root);
 
 	char root_pid[15] = "pid=";
 	char dfs_or_bfs[15] = "flag=";
-
 	strcat(root_pid, pid_number);
 	strcat(dfs_or_bfs, flag);
 
+	/*
+	printf("%s",root_pid);
+	printf("\n");
+	printf("%s",dfs_or_bfs);
+	*/
+
 	int child;
 	if((child = fork()) == 0){
+		//printf("im inside child \n");
 		char *traverse_args[] = {"/usr/bin/sudo","insmod","pstraverse.ko",root_pid,dfs_or_bfs,0};
     	execv(traverse_args[0], traverse_args);
 	}else{
+		//printf("im inside parent \n");
 		wait(NULL);
 		char *remove_args[] = {"/usr/bin/sudo","rmmod","pstraverse.ko",0};
     	execv(remove_args[0], remove_args);

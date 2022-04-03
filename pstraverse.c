@@ -12,7 +12,7 @@ module_param(pid,int,0);
 module_param(flag,charp,0);
 
 void DFS(struct task_struct *ptr)
-{   
+{
     struct task_struct *task;
     struct list_head *list;
 
