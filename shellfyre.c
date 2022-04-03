@@ -1,3 +1,5 @@
+//İsmail Hakkı Yeşil 72293 - Alkan Akısu 71455
+
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdio.h>
@@ -6,14 +8,22 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <sys/stat.h>
+
 const char *sysname = "shellfyre";
 
-void fileSearch(char *searchedWord, bool isRecursive, bool isOpen);
 void execute(char *commName, char **args);
+void fileSearch(char *searchedWord, bool isRecursive, bool isOpen);
+void take(char *dirName);
+void cd_helper(char* dirName);
+void mkdir_helper(char* dirName);
 void rockPaperScissors();
 char *whichFighter(char fighterInitial);
 void coffeeSelection();
 void DadJoke();
+void pstraverse(int root, char* flag);
+
+//ls -td -- */ | head -n 10 | cut -d'/' -f1 for getting libraries
 
 enum return_codes
 {
@@ -414,6 +424,12 @@ int process_command(struct command_t *command)
 		return SUCCESS;
 	}
 
+if (strcmp(command->name, "take")==0 || strcmp(command->name, "t") == 0)
+	{
+		take(command->args[0]);
+		return SUCCESS;
+ 	}
+
 	if (strcmp(command->name, "joker") == 0 || strcmp(command->name, "j") == 0)
 	{
 
@@ -421,6 +437,12 @@ int process_command(struct command_t *command)
 		DadJoke();
 		return SUCCESS;
 	}
+
+	if (strcmp(command->name, "pstraverse")==0 || strcmp(command->name, "pstra") == 0)
+	{
+		pstraverse(atoi(command->args[0]), command->args[1]);
+		return SUCCESS;
+ 	}
 
 	pid_t pid = fork();
 
@@ -500,16 +522,9 @@ void execute(char *commName, char **args)
 
 void fileSearch(char *searchedWord, bool isRecursive, bool isOpen)
 {
-	// non-recursive
-	//  find ./workspace/python -maxdepth 1 -name hanoi.py
-	// recursive
-	//  find ./workspace/python -name input.csv
-	// open
-
 	char fileName[100];
 	strcat(fileName, searchedWord);
 	strcat(fileName, ".*");
-	// printf("%s\n", fileName);
 
 	// -o is work in progress
 	if (!isRecursive)
@@ -662,6 +677,30 @@ void coffeeSelection()
 		}
 	}
 }
+void take(char* dirName){
+	const char* folder;
+    
+    folder = "/tmp";
+    struct stat sb;
+
+    if (stat(folder, &sb) == 0 && S_ISDIR(sb.st_mode)) { // dir exists so switch to it
+		cd_helper(dirName);
+    } else { // dir doesn't exist so create and switch to it
+        mkdir_helper(dirName);
+		cd_helper(dirName);
+    }
+}
+
+void cd_helper(char* dirName){
+	chdir(dirName);
+	printf("Successfully changed to directory %s\n", dirName);
+}
+
+void mkdir_helper(char* dirName){
+	printf("im inside the mkdir helper\n");
+	int result = mkdir(dirName, 0777);
+	printf("Successfully created the directory %s\n", dirName);
+}
 
 void DadJoke()
 {
@@ -669,4 +708,24 @@ void DadJoke()
 	char *URL = "https://icanhazdadjoke.com";
 
 	execlp("curl", "curl", "-H", "\"Accept: text/plain\"", URL, NULL);
+}
+void pstraverse(int root, char *flag) {
+    char pid_number[15];
+	sprintf(pid_number, "%d", root);
+
+	char root_pid[15] = "pid=";
+	char dfs_or_bfs[15] = "flag=";
+
+	strcat(root_pid, pid_number);
+	strcat(dfs_or_bfs, flag);
+
+	int child;
+	if((child = fork()) == 0){
+		char *traverse_args[] = {"/usr/bin/sudo","insmod","pstraverse.ko",root_pid,dfs_or_bfs,0};
+    	execv(traverse_args[0], traverse_args);
+	}else{
+		wait(NULL);
+		char *remove_args[] = {"/usr/bin/sudo","rmmod","pstraverse.ko",0};
+    	execv(remove_args[0], remove_args);
+	}
 }
