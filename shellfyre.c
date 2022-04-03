@@ -9,21 +9,20 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <assert.h>
+#include <limits.h>
 
 const char *sysname = "shellfyre";
 
 void execute(char *commName, char **args);
 void fileSearch(char *searchedWord, bool isRecursive, bool isOpen);
 void take(char *dirName);
-void cd_helper(char* dirName);
-void mkdir_helper(char* dirName);
+static void mkdirRecursive(const char *path, mode_t mode);
 void rockPaperScissors();
 char *whichFighter(char fighterInitial);
 void coffeeSelection();
 void DadJoke();
 void pstraverse(int root, char* flag);
-
-//ls -td -- */ | head -n 10 | cut -d'/' -f1 for getting libraries
 
 enum return_codes
 {
@@ -678,28 +677,31 @@ void coffeeSelection()
 	}
 }
 void take(char* dirName){
-	const char* folder;
-    
-    folder = "/tmp";
-    struct stat sb;
-
-    if (stat(folder, &sb) == 0 && S_ISDIR(sb.st_mode)) { // dir exists so switch to it
-		cd_helper(dirName);
-    } else { // dir doesn't exist so create and switch to it
-        mkdir_helper(dirName);
-		cd_helper(dirName);
-    }
-}
-
-void cd_helper(char* dirName){
+	mkdirRecursive(dirName, 0777);
 	chdir(dirName);
-	printf("Successfully changed to directory %s\n", dirName);
 }
 
-void mkdir_helper(char* dirName){
-	printf("im inside the mkdir helper\n");
-	int result = mkdir(dirName, 0777);
-	printf("Successfully created the directory %s\n", dirName);
+static void mkdirRecursive(const char *path, mode_t mode) {
+    char opath[PATH_MAX];
+    char *p;
+    size_t len;
+
+    strncpy(opath, path, sizeof(opath));
+    opath[sizeof(opath) - 1] = '\0';
+    len = strlen(opath);
+    if (len == 0)
+        return;
+    else if (opath[len - 1] == '/')
+        opath[len - 1] = '\0';
+    for(p = opath; *p; p++)
+        if (*p == '/') {
+            *p = '\0';
+            if (access(opath, F_OK))
+                mkdir(opath, mode);
+            *p = '/';
+        }
+    if (access(opath, F_OK))         /* if path is not terminated with / */
+        mkdir(opath, mode);
 }
 
 void DadJoke()

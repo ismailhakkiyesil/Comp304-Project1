@@ -11,7 +11,6 @@ static char *flag;
 module_param(pid,int,0);
 module_param(flag,charp,0);
 
-//DFS function
 void DFS(struct task_struct *ptr)
 {   
     struct task_struct *task;
@@ -25,7 +24,6 @@ void DFS(struct task_struct *ptr)
                 task = list_entry(list, struct task_struct, sibling);
                 DFS(task);
             }
-            
     }
 }
 
